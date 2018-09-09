@@ -1,0 +1,68 @@
+{
+    "name": "miralucho",
+    "version": "0.0.1",
+    "description": "Hobbie project of a simple game",
+    "main": "index.js",
+    "scripts": {
+        "prepublishOnly": "npm run build",
+        "dev": "npm-run-all --parallel dev:lib dev:docs",
+        "dev:lib": "webpack --config build/webpack.lib.conf.js --watch --progress --hide-modules",
+        "dev:docs": "node build/dev-server.js",
+        "build": "npm run build:lib && npm run build:docs",
+        "build:lib": "node build/build-lib.js",
+        "build:docs": "node build/build.js",
+        "unit": "cross-env BABEL_ENV=test karma start test/unit/karma.conf.js --single-run",
+        "e2e": "node test/e2e/runner.js",
+        "test": "npm run unit && npm run e2e",
+        "lint": "eslint --ext .js src test/unit/specs test/e2e/specs"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/thefzn/miralucho_revival.git"
+    },
+    "keywords": [
+        "game",
+        "javascript"
+    ],
+    "author": "thefzn <fzn.webdesign@gmail.com>",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/thefzn/miralucho_revival/issues"
+    },
+    "homepage": "https://github.com/thefzn/miralucho_revival#readme",
+    "dependencies": {},
+    "devDependencies": {
+        "babel-register": "^6.26.0",
+        "chalk": "^2.4.1",
+        "child_process": "^1.0.2",
+        "chromedriver": "^2.41.0",
+        "compression-webpack-plugin": "^2.0.0",
+        "connect-history-api-fallback": "^1.5.0",
+        "copy-webpack-plugin": "^4.5.2",
+        "cross-spawn": "^6.0.5",
+        "eslint": "^5.5.0",
+        "eslint-config-airbnb": "^17.1.0",
+        "eslint-friendly-formatter": "^4.0.1",
+        "eslint-plugin-import": "^2.14.0",
+        "eslint-plugin-jsx-a11y": "^6.1.1",
+        "eslint-plugin-react": "^7.11.1",
+        "eventsource-polyfill": "^0.9.6",
+        "express": "^4.16.3",
+        "extract-text-webpack-plugin": "^3.0.2",
+        "file-loader": "^1.1.11",
+        "friendly-errors-webpack-plugin": "^1.7.0",
+        "html-webpack-plugin": "^3.2.0",
+        "opn": "^5.3.0",
+        "optimize-css-assets-webpack-plugin": "^5.0.1",
+        "ora": "^3.0.0",
+        "rimraf": "^2.6.2",
+        "selenium-server": "^3.14.0",
+        "semver": "^5.5.1",
+        "shelljs": "^0.8.2",
+        "webpack": "^4.17.2",
+        "webpack-bundle-analyzer": "^2.13.1",
+        "webpack-dev-middleware": "^3.2.0",
+        "webpack-hot-middleware": "^2.23.1",
+        "webpack-merge": "^4.1.4"
+    }
+}
