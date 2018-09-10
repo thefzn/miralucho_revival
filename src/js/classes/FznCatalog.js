@@ -3,7 +3,7 @@ import FznBackground from './FznBackground';
 import FznButton from './FznButton';
 
 export default class FznCatalog {
-    construct(game, type) {
+    constructor(game, type) {
         this.type = type || "generic";
         this.items = {};
         this.length = 0;

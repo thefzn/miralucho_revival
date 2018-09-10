@@ -1,7 +1,7 @@
 import FznAnimLib from './FznAnimLib';
 
 export default class FznAnimation extends FznAnimLib {
-    construct(item, anim, p) {
+    constructor(item, anim, p) {
         super();
 
         // Data Vars

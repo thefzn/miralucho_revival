@@ -1,7 +1,7 @@
 import FznAnimation from './FznAnimation';
 
 export default class FznMenu {
-    construct(game, params) {
+    constructor(game, params) {
         let parent = null;
         let parentSize = 0;
         let centerX = 0;

@@ -1,5 +1,5 @@
 export default class FznAnimLib {
-    construct() {
+    constructor() {
         this.step = 7;
     }
 

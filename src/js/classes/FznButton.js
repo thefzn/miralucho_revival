@@ -1,7 +1,7 @@
 import FznAnimation from './FznAnimation';
 
 export default class FznButton {
-    construct(menu, params) {
+    constructor(menu, params) {
         // Data Vars
         this.menu = menu || false;
         this.game = menu.game;
