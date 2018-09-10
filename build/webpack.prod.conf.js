@@ -3,7 +3,7 @@ const webpack = require('webpack');
 const merge = require('webpack-merge');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const ExtractTextPlugin = require("mini-css-extract-plugin");
 const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin');
 const CompressionWebpackPlugin = require('compression-webpack-plugin');
 const BundleAnalyzer = require('webpack-bundle-analyzer');
@@ -17,6 +17,7 @@ const env = process.env.NODE_ENV === 'testing'
     : config.build.env;
 
 const webpackConfig = merge(baseWebpackConfig, {
+    mode: 'production',
     optimization: {
         splitChunks: {
             chunks: 'all',
@@ -80,7 +81,6 @@ const webpackConfig = merge(baseWebpackConfig, {
             filename: process.env.NODE_ENV === 'testing'
                 ? 'index.html'
                 : config.build.index,
-            template: 'index.html',
             inject: true,
             minify: {
                 removeComments: true,

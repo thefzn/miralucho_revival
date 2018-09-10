@@ -3,13 +3,11 @@ const path = require('path');
 const express = require('express');
 const webpack = require('webpack');
 const devMiddlewareFn = require('webpack-dev-middleware');
-
 const webpackConfig = process.env.NODE_ENV === 'testing'
     ? require('./webpack.prod.conf')
     : require('./webpack.dev.conf');
-require('./check-versions');
-
 const config = require('../config');
+require('./check-versions');
 
 process.env.NODE_ENV = process.env.NODE_ENV || JSON.parse(config.dev.env.NODE_ENV);
 
@@ -18,7 +16,6 @@ process.env.NODE_ENV = process.env.NODE_ENV || JSON.parse(config.dev.env.NODE_EN
 const port = process.env.PORT || config.dev.port;
 // automatically open browser, if not set will be false
 const autoOpenBrowser = !!config.dev.autoOpenBrowser;
-
 const app = express();
 const compiler = webpack(webpackConfig);
 const devMiddleware = devMiddlewareFn(compiler, {
@@ -27,7 +24,7 @@ const devMiddleware = devMiddlewareFn(compiler, {
 });
 
 // handle fallback for HTML5 history API
-app.use(require('connect-history-api-fallback')());
+// app.use(require('connect-history-api-fallback')());
 
 // serve webpack bundle output
 app.use(devMiddleware);
@@ -40,6 +37,7 @@ const uri = `http://localhost:${port}`;
 
 let resolveFn;
 const readyPromise = new Promise((resolve) => {
+    console.log("> Server Ready");
     resolveFn = resolve;
 });
 

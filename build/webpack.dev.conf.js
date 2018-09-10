@@ -8,6 +8,7 @@ const config = require('../config');
 const utils = require('./utils');
 
 module.exports = merge(baseWebpackConfig, {
+    mode: 'development',
     module: {
         rules: utils.styleLoaders({ sourceMap: config.dev.cssSourceMap }),
     },
@@ -20,7 +21,6 @@ module.exports = merge(baseWebpackConfig, {
         new webpack.NoEmitOnErrorsPlugin(),
         new HtmlWebpackPlugin({
             filename: 'index.html',
-            template: 'index.html',
             inject: true,
         }),
         new FriendlyErrorsPlugin(),

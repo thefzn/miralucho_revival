@@ -1,5 +1,5 @@
 const path = require('path');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const ExtractTextPlugin = require("mini-css-extract-plugin");
 
 const config = require('../config');
 
@@ -40,10 +40,10 @@ exports.cssLoaders = (o) => {
 
         // Extract CSS when that option is specified
         // (which is the case during production build)
-        return options.extract ? ExtractTextPlugin.extract({
-            use: loaders,
-            fallback: 'style-loader',
-        }) : loaders;
+        if (options.extract) {
+            loaders.unshift(ExtractTextPlugin.loader);
+        }
+        return loaders;
     }
 
     // https://vue-loader.vuejs.org/en/configurations/extract-css.html
@@ -61,8 +61,9 @@ exports.cssLoaders = (o) => {
 // Generate loaders for standalone style files
 exports.styleLoaders = (options) => {
     const output = [];
-    const loaders = exports.cssLoaders(options).keys();
-    loaders.forEach((extension) => {
+    const loaders = exports.cssLoaders(options);
+
+    Object.keys(loaders).forEach((extension) => {
         const loader = loaders[extension];
         output.push({
             test: new RegExp(`\\.${extension}$`),
