@@ -25,7 +25,7 @@ export default class FznCatalog {
         const index = Math.floor(Math.random() * l);
         let found = null;
         let counter = 0;
-        this.items.keys().forEach((item) => {
+        Object.keys(this.items).forEach((item) => {
             if (counter === index) found = item;
             counter += 1;
         });
@@ -43,11 +43,11 @@ export default class FznCatalog {
 
         this.instances += 1;
 
-        this.itm.keys().forEach((def) => {
+        Object.keys(this.itm).forEach((def) => {
             p[def] = itm[def];
         });
 
-        this.params.keys().forEach((def) => {
+        Object.keys(this.params).forEach((def) => {
             p[def] = params[def];
         });
 

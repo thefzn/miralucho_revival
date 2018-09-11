@@ -99,7 +99,7 @@ export default class FznMenu {
     loadItems() {
         let item = null;
         let theLib = null;
-        this.game.libs.keys().forEach((lib) => {
+        Object.keys(this.game.libs).forEach((lib) => {
             theLib = this.items[`${lib}s`] || false;
             if (theLib) {
                 if (lib !== "sound") {
@@ -152,7 +152,7 @@ export default class FznMenu {
     draw(type) {
         const target = this[`${type.toLowerCase()}s`] || false;
         if (target) {
-            target.keys().forEach((item) => {
+            Object.keys(target).forEach((item) => {
                 if (type.toLowerCase() === "sprite") {
                     if (target[item].alive) {
                         target[item].go();
@@ -220,7 +220,7 @@ export default class FznMenu {
     }
 
     playSound() {
-        this.sounds.keys().forEach((s) => {
+        Object.keys(this.sounds).forEach((s) => {
             if (this.sounds[s].audio instanceof Audio) {
                 this.sounds[s].audio.play();
             }
@@ -238,12 +238,12 @@ export default class FznMenu {
             insidePos[0] = pos[0] - this.pos[0];
             insidePos[1] = pos[1] - this.pos[1];
             if (typeof this.menus === "object") {
-                this.menus.keys().forEach((item) => {
+                Object.keys(this.menus).forEach((item) => {
                     this.menus[item].checkClicked(insidePos);
                 });
             }
             if (typeof this.buttons === "object") {
-                this.buttons.keys().forEach((item) => {
+                Object.keys(this.buttons).forEach((item) => {
                     this.buttons[item].checkClicked(insidePos);
                 });
             }

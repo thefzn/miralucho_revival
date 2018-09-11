@@ -1,5 +1,5 @@
 import animationFrame from '../tools/animationFrame';
-import gameLang from '../tools/Lang';
+import gameLang from '../config/gameLang';
 import FznLoader from './FznLoader';
 import FznCatalog from './FznCatalog';
 
@@ -53,13 +53,11 @@ export default class FznGame {
 
     load() {
         const self = this;
-        const imagesArr = this.images.keys();
-        const audiosArr = this.audios.keys();
         this.loader.total = this.loadQueue;
         this.loading();
 
 
-        imagesArr.forEach((img) => {
+        Object.keys(this.images).forEach((img) => {
             this.images[img] = new Image();
             this.images[img].addEventListener("load", () => {
                 self.loadQueue -= 1;
@@ -67,7 +65,7 @@ export default class FznGame {
             this.images[img].src = img;
         });
 
-        audiosArr.forEach((snd) => {
+        Object.keys(this.audios).forEach((snd) => {
             this.audios[snd] = new Audio();
             this.audios[snd].addEventListener("loadeddata", () => {
                 self.loadQueue -= 1;
@@ -127,10 +125,9 @@ export default class FznGame {
 
     draw(type) {
         const target = this[`${type.toLowerCase()}s`] || false;
-        const targetArr = target.keys();
 
         if (target) {
-            targetArr.forEach((item) => {
+            Object.keys(target).forEach((item) => {
                 if (type.toLowerCase() === "sprite") {
                     if (target[item].alive) {
                         target[item].go();
@@ -251,12 +248,11 @@ export default class FznGame {
 
     onClick(pos) {
         const menus = [];
-        const menusArr = this.menus.keys();
 
         let catched = false;
         // len,window,menu;
 
-        menusArr.forEach((menu) => {
+        Object.keys(this.menus).forEach((menu) => {
             if (this.menus[menu].click) {
                 menus.push(this.menus[menu]);
             }
@@ -453,5 +449,10 @@ export default class FznGame {
         if (lang && lang in gameLang) {
             this.lang = lang;
         }
+    }
+
+    forceReload() {
+        this.pause();
+        window.location.reload();
     }
 }
