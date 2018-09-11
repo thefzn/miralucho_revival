@@ -2,6 +2,7 @@ const webpack = require('webpack');
 const merge = require('webpack-merge');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const baseWebpackConfig = require('./webpack.base.conf');
 const config = require('../config');
@@ -10,7 +11,10 @@ const utils = require('./utils');
 module.exports = merge(baseWebpackConfig, {
     mode: 'development',
     module: {
-        rules: utils.styleLoaders({ sourceMap: config.dev.cssSourceMap }),
+        rules: utils.styleLoaders({
+            sourceMap: config.dev.cssSourceMap,
+            extract: true,
+        }),
     },
     // cheap-module-eval-source-map is faster for development
     devtool: 'source-map',
@@ -24,5 +28,8 @@ module.exports = merge(baseWebpackConfig, {
             inject: true,
         }),
         new FriendlyErrorsPlugin(),
+        new MiniCssExtractPlugin({
+            filename: "[name].css",
+        }),
     ],
 });

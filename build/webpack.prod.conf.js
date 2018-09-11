@@ -3,9 +3,9 @@ const webpack = require('webpack');
 const merge = require('webpack-merge');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const ExtractTextPlugin = require("mini-css-extract-plugin");
 const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin');
 const CompressionWebpackPlugin = require('compression-webpack-plugin');
+const ExtractTextPlugin = require("mini-css-extract-plugin");
 const BundleAnalyzer = require('webpack-bundle-analyzer');
 
 const utils = require('./utils');
@@ -36,17 +36,17 @@ const webpackConfig = merge(baseWebpackConfig, {
             },
         },
     },
-    module: {
-        rules: utils.styleLoaders({
-            sourceMap: config.build.productionSourceMap,
-            extract: true,
-        }),
-    },
     devtool: config.build.productionSourceMap ? '#source-map' : false,
     output: {
         path: config.build.assetsRoot,
         filename: utils.assetsPath('js/[name].js'),
         chunkFilename: utils.assetsPath('js/[name].js'),
+    },
+    module: {
+        rules: utils.styleLoaders({
+            sourceMap: config.build.productionSourceMap,
+            extract: true,
+        }),
     },
     plugins: [
         // http://vuejs.github.io/vue-loader/en/workflow/production.html
@@ -54,16 +54,16 @@ const webpackConfig = merge(baseWebpackConfig, {
             'process.env': env,
         }),
 
+        // extract css into its own file
+        new ExtractTextPlugin({
+            filename: utils.assetsPath('css/[name].css'),
+        }),
+
         new webpack.optimize.UglifyJsPlugin({
             compress: {
                 warnings: false,
             },
             sourceMap: true,
-        }),
-
-        // extract css into its own file
-        new ExtractTextPlugin({
-            filename: utils.assetsPath('css/[name].css'),
         }),
 
         // Compress extracted CSS. We are using this plugin so that possible
