@@ -1,7 +1,10 @@
-import animationFrame from '../tools/animationFrame';
+import { animationFrame, getRandom } from '../tools';
 import gameLang from '../config/gameLang';
 import FznLoader from './FznLoader';
 import FznCatalog from './FznCatalog';
+import FznMenu from './FznMenu';
+import FznBackground from './FznBackground';
+import FznButton from './FznButton';
 
 export default class FznGame {
     constructor(canvasID) {
@@ -25,6 +28,7 @@ export default class FznGame {
         this.gameOver = true;
         this.wait = 30;
         this.increment = 1.1;
+        this.debug = false;
         this.font = {
             family: "Gamegirl",
             color: "black",
@@ -41,13 +45,14 @@ export default class FznGame {
         });
 
         if (!this.canvas) {
-            console.log("Canvas not supported or error loading");
+            this.error("Canvas not supported or error loading", "error");
             return false;
         }
         window.onresize = () => { self.resize(); };
         this.canvas.fillStyle = this.font.color;
         this.canvas.font = `${this.font.size} '${this.font.family}', sans-serif"`;
         this.canvas.textAlign = this.font.align;
+        this.log('Game initialized!', 'event');
         this.catchClick();
     }
 
@@ -56,11 +61,13 @@ export default class FznGame {
         this.loader.total = this.loadQueue;
         this.loading();
 
-
+        this.log('Loading assets.');
         Object.keys(this.images).forEach((img) => {
             this.images[img] = new Image();
             this.images[img].addEventListener("load", () => {
                 self.loadQueue -= 1;
+                if (!self.loadQueue) self.log(`Assets loaded! Will wait ${self.wait} frames`, 'event');
+                else self.log(`Image loaded, ${self.loadQueue} assets remaining.`);
             }, false);
             this.images[img].src = img;
         });
@@ -69,6 +76,8 @@ export default class FznGame {
             this.audios[snd] = new Audio();
             this.audios[snd].addEventListener("loadeddata", () => {
                 self.loadQueue -= 1;
+                if (!self.loadQueue) self.log(`Assets loaded! Will wait ${self.wait} frames`, 'event');
+                else self.log(`Audio loaded,  ${self.loadQueue} assets remaining.`);
             }, false);
             this.audios[snd].src = snd;
         });
@@ -87,7 +96,9 @@ export default class FznGame {
                 self.loading();
             });
             this.wait -= 1;
+            if (this.wait <= 0) this.log('Done waiting!');
         } else {
+            self.log("Starting Game.", "event");
             self.onLoad(self);
             animationFrame(() => {
                 self.go();
@@ -118,6 +129,7 @@ export default class FznGame {
         }
 
         this.draw("menu");
+
         animationFrame(() => {
             self.go();
         });
@@ -159,32 +171,15 @@ export default class FznGame {
 
         if (!type) return;
 
-        this.libs = this.libs || {};
         const target = type.toLowerCase();
         this.libs[target] = this.libs[target] || new FznCatalog(this, type.toLowerCase());
-        if (params instanceof Array) {
-            for (let i = 0, len = params.length; i < len; i += 1) {
-                this.libs[target].store(params[i]);
-                if ((type === "sound" || type === "music") && typeof params[i].source === "string") {
-                    this.loadSound(params[i].source);
-                } else if (typeof params[i].source === "string") {
-                    this.loadImage(params[i].source);
-                }
-            }
-        } else {
-            this.libs[target].store(params);
-            if ((type === "sound" || type === "music") && typeof params.source === "string") {
-                this.loadSound(params.source);
-            } else if (typeof params.source === "string") {
-                this.loadImage(params.source);
-            }
-        }
+        this.libs[target].store(params);
     }
 
     loadWindow(windowRaw, paramsRaw) {
         const params = paramsRaw || {};
         const window = this.libs.window.generate(
-            this.libs.window.getRandom(this.windowVariation),
+            getRandom(this.windowVariation, this.libs.window),
             false,
             params,
         );
@@ -451,8 +446,68 @@ export default class FznGame {
         }
     }
 
+    generate(type, parent, orParams, name) {
+        const params = orParams || {};
+        const n = name || params.copyOf || false;
+        const lib = this.libs[type] || false;
+        const itm = !n || !lib || !lib.items ? {} : lib.items[n] || {};
+        const parentEl = parent || this;
+        const p = Object.assign({}, itm, params);
+        let result = null;
+        if (!lib) return result;
+
+        this.instances += 1;
+
+        p.id = `${type}_${name}_${lib.instances}`;
+        switch (type) {
+        case "background":
+            result = new FznBackground(parentEl, p);
+            break;
+        case "overlay":
+            result = new FznBackground(parentEl, p);
+            break;
+        case "button":
+            result = new FznButton(parentEl, p);
+            break;
+        case "window":
+            result = new FznMenu(parentEl, p);
+            break;
+        case "menu":
+            result = new FznMenu(parentEl, p);
+            break;
+        case "sound":
+            p.audio = this.game.audios[p.source];
+            result = p;
+            break;
+        default:
+            result = null;
+        }
+        return result;
+    }
+
     forceReload() {
         this.pause();
         window.location.reload();
+    }
+
+    log(message, type) {
+        let t = type || 'log';
+        const classes = {
+            log: { tClass: 'background: #26de81; color: #FFFFFF', mClass: 'color: #20bf6b;' },
+            info: { tClass: 'background: #45aaf2; color: #FFFFFF', mClass: 'color: #2d98da;' },
+            event: { tClass: 'background: #4b7bec; color: #FFFFFF', mClass: 'color: #3867d6;' },
+            tip: { tClass: 'background: #a55eea; color: #FFFFFF', mClass: 'color: #8854d0;' },
+            warn: { tClass: 'background: #f7b731; color: #FFFFFF', mClass: 'color: #fd9644;' },
+            error: { tClass: 'background: #fc5c65; color: #FFFFFF', mClass: 'color: #eb3b5a;' },
+        };
+        const format = classes[t] || classes.log;
+        const { tClass, mClass } = format;
+        const m = `%c ${message}`;
+
+        t = `%c ${t} `;
+
+        if (!this.debug) return;
+        if (t) console.log(t + m, tClass, mClass);
+        else console.log(m, mClass);
     }
 }
