@@ -21,9 +21,10 @@ import configProvider from './config';
     // Add language
     game.lang = LANG;
 
-    const HEIGHT = game.cnv.height;
-    const WIDTH = game.cnv.width;
-    const CONFIG = configProvider(LANG, HEIGHT, WIDTH);
+    // Show Debug messages on the console
+    game.debug = true;
+
+    const CONFIG = configProvider(LANG, game.cnv.height, game.cnv.width);
 
     // Backgrounds
     game.define("background", CONFIG.backgrounds);
@@ -45,12 +46,12 @@ import configProvider from './config';
 
     game.onLoad = (theGame) => {
         // const music;
-        console.log('Loaded');
         theGame.add("menu", "xMainMenu");
         // music = theGame.add("sound","bgMusic","mainBGMusic");
         // music.audio.play();
         // music.audio.volume = 0.1;
         // music.audio.loop=true;
+        setTimeout(() => { theGame.pause(); }, 1000);
     };
 
     game.load();

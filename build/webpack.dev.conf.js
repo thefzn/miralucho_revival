@@ -25,6 +25,7 @@ module.exports = merge(baseWebpackConfig, {
         new webpack.NoEmitOnErrorsPlugin(),
         new HtmlWebpackPlugin({
             filename: 'index.html',
+            title: 'MiraLucho',
             inject: true,
         }),
         new FriendlyErrorsPlugin(),
