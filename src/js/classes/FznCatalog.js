@@ -34,22 +34,14 @@ export default class FznCatalog {
 
     generate(name, id, orParams) {
         const n = name || false;
-        const p = {};
         const itm = this.items[n];
         const params = orParams || {};
+        const p = Object.assign({}, itm, params);
         let result = null;
         let parent = null;
         if (!n || typeof this.items[n] === "undefined") return result;
 
         this.instances += 1;
-
-        Object.keys(this.itm).forEach((def) => {
-            p[def] = itm[def];
-        });
-
-        Object.keys(this.params).forEach((def) => {
-            p[def] = params[def];
-        });
 
         p.id = p.id || id || `${this.type}_${name}_${this.instances}`;
         switch (this.type) {

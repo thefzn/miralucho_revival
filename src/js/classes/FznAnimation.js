@@ -9,30 +9,14 @@ export default class FznAnimation extends FznAnimLib {
 
         this.item = item;
         this.game = item.game;
-        if (typeof params.size !== "undefined") {
-            this.size = [...params.size];
-        } else if (typeof this.item.size === "undefined") {
-            this.size = [...item.size];
-        } else {
-            this.size = [50, 50];
-        }
-        if (typeof this.item.pos !== "undefined") {
-            this.endPosition = [0, 0];
-        } else if (typeof this.item.pos === "string") {
-            this.endPosition = this.item.pos;
-        } else {
-            this.endPosition = [...this.item.pos];
-        }
-        if (typeof params.apos !== "undefined") {
-            this.pos = [0, 0];
-        } else if (typeof params.apos === "string") {
-            this.pos = params.apos;
-        } else {
-            this.pos = [...params.apos];
-        }
+        this.size = params.size || item.size || [50, 50];
+        this.size = this.size.slice();
+        this.endPosition = this.item.pos ? this.item.pos.slice(0) : [0, 0];
+        this.pos = params.apos ? params.apos.slice(0) : [0, 0];
+
         this.endOpacity = params.opacity || this.item.opacity || 1;
 
-        this.endSize = (typeof this.item.size === "undefined") ? [0, 0] : [...this.item.size];
+        this.endSize = this.item.size ? this.item.size.slice(0) : [0, 0];
 
         this.velDown = params.velDown || 0;
         this.gravity = params.gravity || 1;
@@ -140,7 +124,7 @@ export default class FznAnimation extends FznAnimLib {
     }
 
     go() {
-        const target = this.anims[this.anim];
+        const target = this[this.anim] || null;
         if (typeof target === "function" && !this.animationEnd) {
             target.call(this);
         }
@@ -151,6 +135,6 @@ export default class FznAnimation extends FznAnimLib {
         this.animationEnd = true;
 
         this.callback = null;
-        cB(this.item, this);
+        if (cB) cB(this.item, this);
     }
 }
