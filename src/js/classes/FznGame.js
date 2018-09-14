@@ -1,10 +1,10 @@
 import { animationFrame, getRandom } from '../tools';
 import gameLang from '../config/gameLang';
 import FznLoader from './FznLoader';
-import FznCatalog from './FznCatalog';
-import FznMenu from './FznMenu';
-import FznBackground from './FznBackground';
-import FznButton from './FznButton';
+import FznLibrary from './FznLibrary';
+import FznMenu from './FznMenu2';
+import FznButton from './FznButton2';
+import FznDrawable from './FznDrawable';
 
 export default class FznGame {
     constructor(canvasID) {
@@ -15,9 +15,14 @@ export default class FznGame {
         this.canvas = (typeof this.cnv.getContext !== "undefined")
             ? this.cnv.getContext('2d')
             : false;
+        this.size = [this.cnv.width, this.cnv.height];
+        this.pos = [0, 0];
+        this.posA = [0, 0];
         this.loadQueue = 0;
         this.start = true;
         this.images = {};
+        this.children = {};
+        this.instances = 0;
         this.audios = {};
         this.libs = {};
         this.windows = [];
@@ -136,20 +141,11 @@ export default class FznGame {
     }
 
     draw(type) {
-        const target = this[`${type.toLowerCase()}s`] || false;
+        const target = this.children[type] || [];
 
-        if (target) {
-            Object.keys(target).forEach((item) => {
-                if (type.toLowerCase() === "sprite") {
-                    if (target[item].alive) {
-                        target[item].go();
-                    } else {
-                        this.remove(type, target[item].id, target[item].type);
-                    }
-                } else if (target[item] && typeof target[item].go === "function") {
-                    target[item].go();
-                }
-            });
+        for (let i = 0, len = target.length, item; i < len; i += 1) {
+            item = target[i] || null;
+            if (item && item.go) item.go();
         }
     }
 
@@ -172,7 +168,7 @@ export default class FznGame {
         if (!type) return;
 
         const target = type.toLowerCase();
-        this.libs[target] = this.libs[target] || new FznCatalog(this, type.toLowerCase());
+        this.libs[target] = this.libs[target] || new FznLibrary(this, type.toLowerCase());
         this.libs[target].store(params);
     }
 
@@ -217,11 +213,9 @@ export default class FznGame {
 
     loadImage(source) {
         const src = source || false;
-        const image = this.images[src];
-        if (src && typeof image === "undefined") {
-            this.images[src] = null;
-            this.loadQueue += 1;
-        }
+        if (!src || src in this.images) return;
+        this.images[src] = null;
+        this.loadQueue += 1;
     }
 
     loadSound(source) {
@@ -390,28 +384,11 @@ export default class FznGame {
         }
     }
 
-    add(type, name, id, params) {
-        let item = null;
-        let target = type.toLowerCase();
-        const lib = this.libs[target] || false;
-        if (lib) {
-            item = lib.generate(name, id, params);
-            if (item) {
-                target = `${type.toLowerCase()}s`;
-                this[target] = this[target] || {};
-                this[target][item.id] = item;
-                if (type.toLowerCase() === "sprite") {
-                    item.floor = this.floor;
-                    this.spriteTypes[item.type] = this.spriteTypes[item.type] || {};
-                    this.spriteTypes[item.type][item.id] = true;
-                    if (item.type === "user") {
-                        this.user = item;
-                        this.attachEvents();
-                    }
-                }
-            }
-        }
-        return item;
+    add(type, name) {
+        const tmp = this.generate(type, null, null, name);
+        this.children[type] = this.children[type] || [];
+        this.children[type].push(tmp);
+        return tmp;
     }
 
     remove(t, id) {
@@ -456,15 +433,18 @@ export default class FznGame {
         let result = null;
         if (!lib) return result;
 
+        console.log(type, n, lib, itm, params, p);
+
         this.instances += 1;
 
-        p.id = `${type}_${name}_${lib.instances}`;
+        p.id = `${type}_${n}_${this.instances}`;
+        p.type = type;
         switch (type) {
         case "background":
-            result = new FznBackground(parentEl, p);
+            result = new FznDrawable(parentEl, p);
             break;
         case "overlay":
-            result = new FznBackground(parentEl, p);
+            result = new FznDrawable(parentEl, p);
             break;
         case "button":
             result = new FznButton(parentEl, p);

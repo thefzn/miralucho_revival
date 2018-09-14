@@ -47,6 +47,7 @@ import configProvider from './config';
     game.onLoad = (theGame) => {
         // const music;
         theGame.add("menu", "xMainMenu");
+        console.log(theGame);
         // music = theGame.add("sound","bgMusic","mainBGMusic");
         // music.audio.play();
         // music.audio.volume = 0.1;

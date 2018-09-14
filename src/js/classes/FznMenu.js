@@ -83,7 +83,7 @@ export default class FznMenu {
         this.game.loadImage(this.source);
         this.loadItems();
         this.playSound();
-        this.onLoad();
+        if (this.onLoad) this.onLoad();
     }
 
     go() {
@@ -94,6 +94,8 @@ export default class FznMenu {
         this.printText();
         this.draw("overlay");
         this.draw("menu");
+
+        console.log('menu go');
     }
 
     loadItems() {
@@ -220,11 +222,11 @@ export default class FznMenu {
     }
 
     playSound() {
-        Object.keys(this.sounds).forEach((s) => {
-            if (this.sounds[s].audio instanceof Audio) {
-                this.sounds[s].audio.play();
+        for (let s = 0, len = this.items.sounds.length; s < len; s += 1) {
+            if (this.items.sounds[s].audio instanceof Audio) {
+                this.items.sounds[s].audio.play();
             }
-        });
+        }
     }
 
     checkClicked(pos) {
@@ -257,7 +259,9 @@ export default class FznMenu {
         const x = (this.parent) ? pos[0] + this.parent[0] : pos[0];
         const y = (this.parent) ? pos[1] + this.parent[1] : pos[1];
         const sprite = this.sprite || [0, 0];
-        const ptrn = this.game.canvas.createPattern(this.game.images[this.source], this.repeat);
+        const ptrn = this.source
+            ? this.game.canvas.createPattern(this.game.images[this.source], this.repeat)
+            : null;
 
         this.realPos[0] = (this.menu) ? pos[0] + this.menu.pos[0] : pos[0];
         this.realPos[1] = (this.menu) ? pos[1] + this.menu.pos[1] : pos[1];

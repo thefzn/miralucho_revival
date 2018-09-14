@@ -3,6 +3,7 @@ import buttonSprite from "../../img/button.png";
 export default [
     {
         name: "btnClose",
+        color: 'red',
         source: buttonSprite,
         sprite: {
             stand: [0, 0],
