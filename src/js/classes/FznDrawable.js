@@ -1,8 +1,9 @@
-import FznAnimation from './FznAnimation';
+// import FznAnimation from './FznAnimation';
 
 export default class FznDrawable {
     constructor(parent, params) {
         const children = params.children || {};
+        const pos = params.pos ? params.pos.slice() : [0, 0];
 
         // Relations and metadata
         this.name = params.name || 'Anon Item';
@@ -15,7 +16,7 @@ export default class FznDrawable {
 
         // Render properties
         this.size = params.size || this.game.size.slice();
-        this.pos = this.getInitialPosition(params.pos);
+        this.pos = this.getInitialPosition(pos);
         this.posA = [0, 0];
         this.isFixed = params.isFixed || false;
         this.opacity = typeof params.opacity === 'number' ? params.opacity : 1;
@@ -38,7 +39,7 @@ export default class FznDrawable {
 
         // Actions
         this.onLoad = params.onLoad || null;
-        this.anim = (params.animation) ? new FznAnimation(this, params.animation) : null;
+        // this.anim = (params.animation) ? new FznAnimation(this, params.animation) : null;
         this.afterGo = null;
         this.isAlive = true;
 
@@ -54,21 +55,35 @@ export default class FznDrawable {
             : [this.parent.cnv.width, this.parent.cnv.height];
         const centerP = [parentSize[0] / 2, parentSize[1] / 2];
         const centerM = [this.size[0] / 2, this.size[1] / 2];
+        const oldPos = typeof pos === "string" ? [pos, pos] : pos.slice();
+        const newPos = [];
 
-        let newPos = [];
-
-        switch (pos) {
+        switch (oldPos[0]) {
         case 'left':
-            newPos = [0, centerP[1] - centerM[1]];
+            newPos[0] = 0;
             break;
         case 'right':
-            newPos = [parentSize[0] - this.size[0], centerP[1] - centerM[1]];
+            newPos[0] = parentSize[0] - this.size[0];
             break;
         case 'center':
-            newPos = [centerP[0] - centerM[0], centerP[1] - centerM[1]];
+            newPos[0] = centerP[0] - centerM[0];
             break;
         default:
-            newPos = pos || [0, 0];
+            newPos[0] = oldPos[0] || 0;
+        }
+
+        switch (oldPos[1]) {
+        case 'top':
+            newPos[1] = 0;
+            break;
+        case 'bottom':
+            newPos[1] = parentSize[1] - this.size[1];
+            break;
+        case 'center':
+            newPos[1] = centerP[1] - centerM[1];
+            break;
+        default:
+            newPos[1] = pos[1] || 0;
         }
 
         return newPos;
@@ -83,11 +98,12 @@ export default class FznDrawable {
             if (itemList) {
                 if (itemList instanceof Array) {
                     for (let j = 0, len2 = itemList.length; j < len2; j += 1) {
-                        this.add(layer, itemList[i]);
+                        this.add(layer, itemList[j]);
                     }
                 } else this.add(layer, itemList);
             }
         }
+        this.refreshText();
     }
 
     go() {
@@ -114,8 +130,12 @@ export default class FznDrawable {
     }
 
     add(type, params) {
-        const tmp = this.game ? this.game.generate(type, this, params) : null;
-        if (tmp) this.children[type].push(tmp);
+        let tmp = null;
+
+        if (type === "text") this.children[type].push(params);
+        else tmp = this.game ? this.game.generate(type, this, params) : null;
+        if (!this.game || !tmp) return;
+        this.children[type].push(tmp);
     }
 
     remove(t, id) {
@@ -136,22 +156,22 @@ export default class FznDrawable {
 
         if (!this.children.text || this.children.text.parsed) return;
 
-        rawText = this.children.text.content || this.children.text || null;
+        if (typeof this.children.text === "string") rawText = this.children.text;
+        else if (this.children.text instanceof Array) rawText = this.children.text.join('\n');
+        else rawText = this.children.text.content || null;
         vars = newVars || this.children.text.variables || {};
         this.children.text = {
-            content: typeof rawText === 'string' ? rawText : null,
+            content: typeof rawText === 'string' ? rawText : '',
             variables: vars,
             parsed: '',
         };
 
-        if (typeof rawText === 'string') this.children.text.parsed = rawText;
-        else if (rawText instanceof Array) this.children.text.parsed = rawText.join('\n');
+        if (this.children.text.content === '') return;
 
-        if (this.children.text.parsed === '') return;
+        this.children.text.parsed = rawText;
 
-        this.children.text.parsed = '';
         Object.keys(vars).forEach((v) => {
-            this.children.text = this.children.text.replace(`{{${v}}}`, vars[v]);
+            this.children.text.parsed = this.children.text.parsed.replace(`{{${v}}}`, vars[v]);
         });
     }
 
@@ -195,8 +215,6 @@ export default class FznDrawable {
         this.game.canvas.globalAlpha = (this.parent)
             ? this.parent.opacity * this.opacity
             : this.opacity;
-
-        console.log("Render:", this.id);
 
         // Render item
         this.renderBgColor(this.posA);
@@ -261,7 +279,7 @@ export default class FznDrawable {
     renderText(pos) {
         let [x, y] = pos;
 
-        if (this.children.text) {
+        if (this.children.text && this.children.text.parsed) {
             this.game.canvas.fillStyle = this.font.color || 'black';
             this.game.canvas.font = `${this.font.size} '${this.font.family}', sans-serif"`;
             y += (parseInt(this.font.size, 10) / 2) + (this.size[1] / 2);
@@ -280,10 +298,10 @@ export default class FznDrawable {
             if (this.font.stroke) {
                 this.game.canvas.lineWidth = this.font.lineWeight || 3;
                 this.game.canvas.strokeStyle = this.font.stroke || 'solid';
-                this.game.canvas.strokeText(this.text, x, y);
+                this.game.canvas.strokeText(this.children.text.parsed, x, y);
             }
 
-            this.game.canvas.fillText(this.text, x, y);
+            this.game.canvas.fillText(this.children.text.parsed, x, y);
         }
     }
 }

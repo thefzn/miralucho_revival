@@ -2,8 +2,8 @@ import { animationFrame, getRandom } from '../tools';
 import gameLang from '../config/gameLang';
 import FznLoader from './FznLoader';
 import FznLibrary from './FznLibrary';
-import FznMenu from './FznMenu2';
-import FznButton from './FznButton2';
+import FznMenu from './FznMenu';
+import FznButton from './FznButton';
 import FznDrawable from './FznDrawable';
 
 export default class FznGame {
@@ -432,8 +432,6 @@ export default class FznGame {
         const p = Object.assign({}, itm, params);
         let result = null;
         if (!lib) return result;
-
-        console.log(type, n, lib, itm, params, p);
 
         this.instances += 1;
 
