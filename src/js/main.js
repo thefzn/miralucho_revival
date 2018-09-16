@@ -1,30 +1,27 @@
-import FznGame from './classes/FznGame';
-
-import '../css/styles.css';
-
-// Cofiguration
-import configProvider from './config';
+import FznGame from './classes/FznGame'; // Library
+import '../css/styles.css'; // Basic CSS
+import configProvider from './config'; // Cofiguration
 
 (function loadGame() {
     const element = document.createElement('canvas');
+    const LANG = "EN";
+
     let game = null;
 
-    element.id = 'board';
     element.width = '100%';
     element.height = '100%';
     document.body.appendChild(element);
 
-    game = new FznGame("board");
+    game = new FznGame(element);
 
-    const LANG = "EN";
+    const CONFIG = configProvider(LANG, game.cnv.height, game.cnv.width);
 
     // Add language
     game.lang = LANG;
+    game.wait = 30;
 
     // Show Debug messages on the console
     game.debug = true;
-
-    const CONFIG = configProvider(LANG, game.cnv.height, game.cnv.width);
 
     // Backgrounds
     game.define("background", CONFIG.backgrounds);
@@ -57,5 +54,3 @@ import configProvider from './config';
 
     game.load();
 }());
-
-// window.addEventListener("load", loadGame);
