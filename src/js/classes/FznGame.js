@@ -6,58 +6,62 @@ import FznMenu from './FznMenu';
 import FznButton from './FznButton';
 import FznDrawable from './FznDrawable';
 
-export default class FznGame {
+export default class FznGame extends FznDrawable {
     constructor(canvasID) {
+        super(null, null, canvasID);
         const self = this;
 
-        this.cnv = (typeof canvasID === "string") ? document.getElementById(canvasID) : canvasID;
         this.resize();
-        this.canvas = (typeof this.cnv.getContext !== "undefined")
-            ? this.cnv.getContext('2d')
-            : false;
-        this.size = [this.cnv.width, this.cnv.height];
-        this.pos = [0, 0];
-        this.posA = [0, 0];
+
         this.loadQueue = 0;
         this.start = true;
         this.images = {};
-        this.children = {};
         this.instances = 0;
         this.audios = {};
         this.libs = {};
-        this.windows = [];
+
+        // this.windows = [];
         this.windowVariation = 3;
         this.turn = 0;
         this.score = 0;
         this.level = 0;
         this.gameOver = true;
-        this.wait = 30;
+        this.wait = 0;
         this.increment = 1.1;
         this.debug = false;
-        this.font = {
-            family: "Gamegirl",
-            color: "black",
-            align: "left",
-            size: "10px",
-        };
+
         this.ram = {};
         this.levelMeter = {};
         this.speed = 1;
+
         this.loader = new FznLoader(this, {
             color: "black",
             size: [this.cnv.width, 10],
-            pos: [0, "center"],
+            pos: [0, "bottom"],
         });
 
         if (!this.canvas) {
-            this.error("Canvas not supported or error loading", "error");
-            return false;
+            throw (
+                new Error("Sorry! Canvas is not supported or there was an error while loading")
+            );
         }
+
         window.onresize = () => { self.resize(); };
+
         this.canvas.fillStyle = this.font.color;
         this.canvas.font = `${this.font.size} '${this.font.family}', sans-serif"`;
         this.canvas.textAlign = this.font.align;
-        this.log('Game initialized!', 'event');
+
+        this.logClasses = {
+            log: { label: 'LOG', tClass: 'background: #26de81; color: #FFFFFF', mClass: 'color: #20bf6b;' },
+            info: { label: 'INFO', tClass: 'background: #45aaf2; color: #FFFFFF', mClass: 'color: #2d98da;' },
+            event: { label: 'LIFECYCLE', tClass: 'background: #4b7bec; color: #FFFFFF', mClass: 'color: #3867d6;' },
+            tip: { label: 'TIP', tClass: 'background: #a55eea; color: #FFFFFF', mClass: 'color: #8854d0;' },
+            warn: { label: 'WARNING', tClass: 'background: #f7b731; color: #FFFFFF', mClass: 'color: #fd9644;' },
+            error: { label: 'ERROR', tClass: 'background: #fc5c65; color: #FFFFFF', mClass: 'color: #eb3b5a;' },
+        };
+
+        this.log('Game initialized!', 'event', true);
         this.catchClick();
     }
 
@@ -66,13 +70,15 @@ export default class FznGame {
         this.loader.total = this.loadQueue;
         this.loading();
 
-        this.log('Loading assets.');
+        this.log('Loading assets.', 'event');
         Object.keys(this.images).forEach((img) => {
             this.images[img] = new Image();
             this.images[img].addEventListener("load", () => {
                 self.loadQueue -= 1;
-                if (!self.loadQueue) self.log(`Assets loaded! Will wait ${self.wait} frames`, 'event');
-                else self.log(`Image loaded, ${self.loadQueue} assets remaining.`);
+                if (!self.loadQueue) {
+                    self.log(`Assets loaded!`, 'event');
+                    if (self.wait) self.log(`Will wait ${self.wait} frames`);
+                } else self.log(`Image loaded, ${self.loadQueue} assets remaining.`);
             }, false);
             this.images[img].src = img;
         });
@@ -81,8 +87,10 @@ export default class FznGame {
             this.audios[snd] = new Audio();
             this.audios[snd].addEventListener("loadeddata", () => {
                 self.loadQueue -= 1;
-                if (!self.loadQueue) self.log(`Assets loaded! Will wait ${self.wait} frames`, 'event');
-                else self.log(`Audio loaded,  ${self.loadQueue} assets remaining.`);
+                if (!self.loadQueue) {
+                    self.log(`Assets loaded!`, 'event');
+                    if (self.wait) self.log(`Will wait ${self.wait} frames`);
+                } else self.log(`Audio loaded, ${self.loadQueue} assets remaining.`);
             }, false);
             this.audios[snd].src = snd;
         });
@@ -103,7 +111,7 @@ export default class FznGame {
             this.wait -= 1;
             if (this.wait <= 0) this.log('Done waiting!');
         } else {
-            self.log("Starting Game.", "event");
+            self.log("Loading complete. Starting Game.", "event");
             self.onLoad(self);
             animationFrame(() => {
                 self.go();
@@ -402,6 +410,7 @@ export default class FznGame {
     resize() {
         this.cnv.width = document.body.clientWidth;
         this.cnv.height = document.body.clientHeight;
+        this.size = [this.cnv.width, this.cnv.height];
     }
 
     addRam(val) {
@@ -468,24 +477,17 @@ export default class FznGame {
         window.location.reload();
     }
 
-    log(message, type) {
+    log(message, type, force) {
         let t = type || 'log';
-        const classes = {
-            log: { tClass: 'background: #26de81; color: #FFFFFF', mClass: 'color: #20bf6b;' },
-            info: { tClass: 'background: #45aaf2; color: #FFFFFF', mClass: 'color: #2d98da;' },
-            event: { tClass: 'background: #4b7bec; color: #FFFFFF', mClass: 'color: #3867d6;' },
-            tip: { tClass: 'background: #a55eea; color: #FFFFFF', mClass: 'color: #8854d0;' },
-            warn: { tClass: 'background: #f7b731; color: #FFFFFF', mClass: 'color: #fd9644;' },
-            error: { tClass: 'background: #fc5c65; color: #FFFFFF', mClass: 'color: #eb3b5a;' },
-        };
-        const format = classes[t] || classes.log;
+
+        const format = this.logClasses[t] || this.logClasses.log;
         const { tClass, mClass } = format;
         const m = `%c ${message}`;
+        const f = force || false;
 
-        t = `%c ${t} `;
+        t = `%c ${format.label} `;
 
-        if (!this.debug) return;
-        if (t) console.log(t + m, tClass, mClass);
-        else console.log(m, mClass);
+        if (!this.debug && !f) return;
+        console.log(t + m, tClass, mClass);
     }
 }

@@ -1,9 +1,22 @@
 // import FznAnimation from './FznAnimation';
 
 export default class FznDrawable {
-    constructor(parent, params) {
+    constructor(parent, p, c) {
+        const params = p || {};
+        const canvasEl = c || null;
         const children = params.children || {};
         const pos = params.pos ? params.pos.slice() : [0, 0];
+        const size = this.game && this.game.size ? this.game.size.slice() : null;
+
+        // FznGame-only setup
+        if (canvasEl) {
+            this.cnv = (canvasEl instanceof HTMLElement)
+                ? canvasEl
+                : document.querySelector(canvasEl);
+            this.canvas = (typeof this.cnv.getContext !== "undefined")
+                ? this.cnv.getContext('2d')
+                : false;
+        }
 
         // Relations and metadata
         this.name = params.name || 'Anon Item';
@@ -11,11 +24,13 @@ export default class FznDrawable {
         this.id = params.id || `${this.type}_${this.name}_anon_${Math.random()}`;
         this.parent = parent || params.parent || null;
         this.children = {};
-        this.game = this.parent && this.parent.game ? this.parent.game : this.parent;
+        this.game = this.parent && this.parent.game
+            ? this.parent.game
+            : this.parent || params.game || this;
         this.layers = ["background", "button", "text", "overlay", "menu", "sounds"];
 
         // Render properties
-        this.size = params.size || this.game.size.slice();
+        this.size = params.size || size || [this.game.cnv.width, this.game.cnv.height];
         this.pos = this.getInitialPosition(pos);
         this.posA = [0, 0];
         this.isFixed = params.isFixed || false;
@@ -30,10 +45,10 @@ export default class FznDrawable {
 
         // Text
         this.font = {
-            family: params.font && params.font.family ? params.font.family : "Arial",
-            color: params.font && params.font.color ? params.font.color : "black",
-            size: params.font && params.font.size ? params.font.size : "6px",
             align: params.font && params.font.align ? params.font.align : "left",
+            color: params.font && params.font.color ? params.font.color : "black",
+            family: params.font && params.font.family ? params.font.family : "Gamegirl",
+            size: params.font && params.font.size ? params.font.size : "10px",
             stroke: params.font && params.font.stroke ? params.font.stroke : false,
         };
 
@@ -42,17 +57,18 @@ export default class FznDrawable {
         // this.anim = (params.animation) ? new FznAnimation(this, params.animation) : null;
         this.afterGo = null;
         this.isAlive = true;
+        if (this.onLoad) this.onLoad();
 
         // Initialize
+        if (canvasEl) return;
         this.loadChildren(children);
-        if (this.onLoad) this.onLoad();
-        this.game.log(`Some ${this.type} item (${this.name}) successfuly loaded.`);
+        this.game.log(`Item ${this.id} (${this.type}) created.`);
     }
 
     getInitialPosition(pos) {
         const parentSize = this.parent
             ? this.parent.size.slice()
-            : [this.parent.cnv.width, this.parent.cnv.height];
+            : [this.game.cnv.width, this.game.cnv.height];
         const centerP = [parentSize[0] / 2, parentSize[1] / 2];
         const centerM = [this.size[0] / 2, this.size[1] / 2];
         const oldPos = typeof pos === "string" ? [pos, pos] : pos.slice();
