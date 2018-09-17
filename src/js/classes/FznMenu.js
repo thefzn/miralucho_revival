@@ -16,14 +16,14 @@ export default class FznMenu extends FznDrawable {
             && pos[1] < this.posA[1] + this.size[1]
         ) {
             insidePos = [pos[0] - this.posA[0], pos[1] - this.posA[1]];
-            if (this.childs.menu) {
-                Object.keys(this.childs.menu).forEach((item) => {
-                    this.childs.menu[item].checkClicked(insidePos);
+            if (this.children.menu) {
+                Object.keys(this.children.menu).forEach((item) => {
+                    this.children.menu[item].checkClicked(insidePos);
                 });
             }
-            if (this.childs.button) {
-                Object.keys(this.childs.button).forEach((item) => {
-                    this.childs.button[item].checkClicked(insidePos);
+            if (this.children.button) {
+                Object.keys(this.children.button).forEach((item) => {
+                    this.children.button[item].checkClicked(insidePos);
                 });
             }
             return true;

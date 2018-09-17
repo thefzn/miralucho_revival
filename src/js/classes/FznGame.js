@@ -212,32 +212,20 @@ export default class FznGame extends FznDrawable {
     }
 
     onClick(pos) {
-        const menus = [];
-
-        let catched = false;
-        // len,window,menu;
-
-        Object.keys(this.menus).forEach((menu) => {
-            if (this.menus[menu].click) {
-                menus.push(this.menus[menu]);
-            }
-        });
-        for (let len = menus.length, menu; len > 0; len -= 1) {
-            menu = menus[len - 1];
-            if (menu.click) {
-                catched = menu.checkClicked(pos);
-                break;
+        if (this.children.menu && this.children.menu.length !== 0) {
+            for (let len = this.children.menu.length, menu; len > 0; len -= 1) {
+                menu = this.children.menu[len - 1];
+                if (menu.checkClicked(pos)) break;
             }
         }
 
-        for (let len = this.windows.length, window; len > 0; len -= 1) {
-            window = this.windows[len - 1];
-            if (window.click) {
-                catched = window.checkClicked(pos);
-            }
-            if (catched) {
-                this.bringToTop(window);
-                break;
+        if (this.children.window && this.children.window.length !== 0) {
+            for (let len = this.children.window.length, window; len > 0; len -= 1) {
+                window = this.children.window[len - 1];
+                if (window.checkClicked(pos)) {
+                    this.bringToTop(window);
+                    break;
+                }
             }
         }
     }
