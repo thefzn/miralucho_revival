@@ -53,9 +53,9 @@ export default [
                 menu.anim.stop();
                 menu.anim.start("fadeOut", false, () => {
                     theGame.removeWindow(menu);
-                    theGame.loadWindow("commonWindow");
-                    theGame.loadWindow("commonWindow");
-                    theGame.loadWindow("commonWindow");
+                    theGame.loadWindow();
+                    theGame.loadWindow();
+                    theGame.loadWindow();
                 });
             }
         },

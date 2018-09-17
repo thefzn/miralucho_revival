@@ -8,7 +8,7 @@ import FznDrawable from './FznDrawable';
 
 export default class FznGame extends FznDrawable {
     constructor(canvasID) {
-        super(null, null, canvasID);
+        super(null, { id: "GAME" }, canvasID);
         const self = this;
 
         this.resize();
@@ -20,15 +20,15 @@ export default class FznGame extends FznDrawable {
         this.audios = {};
         this.libs = {};
 
-        // this.windows = [];
         this.windowVariation = 3;
         this.turn = 0;
         this.score = 0;
         this.level = 0;
-        this.gameOver = true;
+        this.gameOver = false;
         this.wait = 0;
         this.increment = 1.1;
         this.debug = false;
+        this.isAlive = false;
 
         this.ram = {};
         this.levelMeter = {};
@@ -65,12 +65,34 @@ export default class FznGame extends FznDrawable {
         this.catchClick();
     }
 
+    beforeGo() {
+        this.canvas.clearRect(0, 0, this.cnv.width, this.cnv.height);
+
+        this.turn = (this.turn < 2520) ? this.turn + 1 : 0;
+
+        if ((this.turn % this.speed) === 0 && !this.gameOver) {
+            this.loadWindow();
+        }
+
+        // if (!this.gameOver) {
+        //     this.updateRam();
+        //     this.updateLevelMeter();
+        //     this.updateScore();
+        // }
+    }
+
+    afterGo() {
+        animationFrame(() => {
+            if (this.loadQueue !== 0 || this.wait !== 0) this.loading();
+            else this.go();
+        });
+    }
+
     load() {
         const self = this;
         this.loader.total = this.loadQueue;
-        this.loading();
 
-        this.log('Loading assets.', 'event');
+        this.log('Loading assets.');
         Object.keys(this.images).forEach((img) => {
             this.images[img] = new Image();
             this.images[img].addEventListener("load", () => {
@@ -94,81 +116,26 @@ export default class FznGame extends FznDrawable {
             }, false);
             this.audios[snd].src = snd;
         });
+
+        this.loading();
     }
 
     loading() {
-        const self = this;
         if (this.loadQueue !== 0) {
             this.loader.go();
-            animationFrame(() => {
-                self.loading();
-            });
         } else if (this.wait > 0) {
-            this.loader.go();
-            animationFrame(() => {
-                self.loading();
-            });
             this.wait -= 1;
-            if (this.wait <= 0) this.log('Done waiting!');
-        } else {
-            self.log("Loading complete. Starting Game.", "event");
-            self.onLoad(self);
-            animationFrame(() => {
-                self.go();
-            });
+            if (this.wait <= 0) {
+                this.log("Loading complete. Starting Game!", "event");
+                if (typeof this.onLoad === "function") this.onLoad(this);
+                this.isAlive = true;
+            }
+            this.loader.go();
         }
+        this.afterGo();
     }
 
-    go() {
-        const self = this;
-
-        if (!this.start) return;
-
-        this.clear();
-        this.turn = (this.turn < 2520) ? this.turn + 1 : 0;
-
-        if ((this.turn % this.speed) === 0 && !this.gameOver) {
-            this.loadWindow("commonWindow");
-        }
-
-        this.draw("background");
-        this.draw("window");
-        this.draw("overlay");
-
-        if (!this.gameOver) {
-            this.updateRam();
-            this.updateLevelMeter();
-            this.updateScore();
-        }
-
-        this.draw("menu");
-
-        animationFrame(() => {
-            self.go();
-        });
-    }
-
-    draw(type) {
-        const target = this.children[type] || [];
-
-        for (let i = 0, len = target.length, item; i < len; i += 1) {
-            item = target[i] || null;
-            if (item && item.go) item.go();
-        }
-    }
-
-    pause() {
-        if (this.start) {
-            this.start = false;
-        } else {
-            this.start = true;
-            this.go();
-        }
-    }
-
-    clear() {
-        this.canvas.clearRect(0, 0, this.cnv.width, this.cnv.height);
-    }
+    pause() { this.isAlive = !this.isAlive; }
 
     define(typeOp, params) {
         const type = typeOp || false;
@@ -180,38 +147,39 @@ export default class FznGame extends FznDrawable {
         this.libs[target].store(params);
     }
 
-    loadWindow(windowRaw, paramsRaw) {
-        const params = paramsRaw || {};
-        const window = this.libs.window.generate(
-            getRandom(this.windowVariation, this.libs.window),
-            false,
-            params,
-        );
-        const rPos = [];
-        let textArr;
-        let target = 'def';
-        let rndmText = 'Default';
+    loadWindow(paramsRaw) {
+        return getRandom(this.windowVariation, {}, paramsRaw);
+        // const params = paramsRaw || {};
+        // const window = this.libs.window.generate(
+        //     getRandom(this.windowVariation, this.libs.window),
+        //     false,
+        //     params,
+        // );
+        // const rPos = [];
+        // let textArr;
+        // let target = 'def';
+        // let rndmText = 'Default';
 
-        window.index = this.windows.length;
-        rPos[0] = Math.round((this.cnv.width - window.size[0]) * Math.random());
-        rPos[1] = Math.round((this.cnv.height - window.size[1]) * Math.random());
-        window.pos = rPos;
-        if (window.items.text.length === 0) {
-            if (window.name.indexOf("little") === 0) {
-                target = 'small';
-            } else if (window.name.indexOf("medium") === 0) {
-                target = 'med';
-            } else if (window.name.indexOf("mega") === 0) {
-                target = 'big';
-            }
-            textArr = gameLang[this.lang].game.windows[target];
+        // window.index = this.windows.length;
+        // rPos[0] = Math.round((this.cnv.width - window.size[0]) * Math.random());
+        // rPos[1] = Math.round((this.cnv.height - window.size[1]) * Math.random());
+        // window.pos = rPos;
+        // if (window.items.text.length === 0) {
+        //     if (window.name.indexOf("little") === 0) {
+        //         target = 'small';
+        //     } else if (window.name.indexOf("medium") === 0) {
+        //         target = 'med';
+        //     } else if (window.name.indexOf("mega") === 0) {
+        //         target = 'big';
+        //     }
+        //     textArr = gameLang[this.lang].game.windows[target];
 
-            rndmText = Math.floor(textArr.length * Math.random());
-            window.items.text = [textArr[rndmText]];
-        }
-        this.windows.push(window);
-        this.ram.count += 1;
-        return window;
+        //     rndmText = Math.floor(textArr.length * Math.random());
+        //     window.items.text = [textArr[rndmText]];
+        // }
+        // this.windows.push(window);
+        // this.ram.count += 1;
+        // return window;
     }
 
     removeWindow(window) {
@@ -273,8 +241,6 @@ export default class FznGame extends FznDrawable {
             }
         }
     }
-
-    onLoad() { return this; }
 
     bringToTop(window) {
         this.removeWindow(window);
@@ -358,53 +324,40 @@ export default class FznGame extends FznDrawable {
         this.ram.height = 154;
         this.levelMeter.width = 150;
 
-        this.add("overlay", "levelBarBack", "theLevelMeterBack", {
+        this.add("overlay", {
+            copyOf: "levelBarBack",
             pos: [
                 (this.cnv.width - (this.levelMeter.width + this.levelMeter.padding + 12)),
                 this.levelMeter.padding - 18,
             ],
         });
-        this.add("overlay", "ramBarBack", "theRamBack", {
+        this.add("overlay", {
+            copyOf: "ramBarBack",
             pos: [
                 (this.ram.padding / 2) - 5,
                 this.cnv.height - (this.ram.padding + 159),
             ],
         });
 
-        this.add("overlay", "ramBar", "theRam", {
+        this.add("overlay", {
+            copyOf: "ramBar",
             pos: [
                 (this.ram.padding / 2),
                 this.cnv.height - this.ram.padding,
             ],
             size: [30, 1],
         });
-        this.add("overlay", "levelBar", "theLevelMeter", {
+        this.add("overlay", {
+            copyOf: "levelBar",
             pos: [
                 (this.cnv.width - (this.levelMeter.width + this.levelMeter.padding)),
                 this.levelMeter.padding,
             ],
             size: [1, 15],
         });
-        this.add("background", "mainBack", "wallpaper");
+        this.add("background", "mainBack");
 
-        if (restart) {
-            this.gameOver = false;
-        }
-    }
-
-    add(type, name) {
-        const tmp = this.generate(type, null, null, name);
-        this.children[type] = this.children[type] || [];
-        this.children[type].push(tmp);
-        return tmp;
-    }
-
-    remove(t, id) {
-        const type = t.toLowerCase();
-        const target = this[`${type}s`] || false;
-        if (target && typeof target[id] !== "undefined") {
-            delete target[id];
-        }
+        if (restart) this.gameOver = false;
     }
 
     resize() {

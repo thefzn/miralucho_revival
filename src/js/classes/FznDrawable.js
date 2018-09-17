@@ -19,6 +19,7 @@ export default class FznDrawable {
         }
 
         // Relations and metadata
+        this.isGame = !!canvasEl;
         this.name = params.name || 'Anon Item';
         this.type = params.type || 'Anonymous';
         this.id = params.id || `${this.type}_${this.name}_anon_${Math.random()}`;
@@ -55,14 +56,13 @@ export default class FznDrawable {
         // Actions
         this.onLoad = params.onLoad || null;
         // this.anim = (params.animation) ? new FznAnimation(this, params.animation) : null;
-        this.afterGo = null;
         this.isAlive = true;
         if (this.onLoad) this.onLoad();
 
-        // Initialize
-        if (canvasEl) return;
+        // Initialize (except on FznGame class)
+        if (this.isGame) return;
         this.loadChildren(children);
-        this.game.log(`Item ${this.id} (${this.type}) created.`);
+        this.game.log(`Item ${this.id} (${this.type}) is ready.`);
     }
 
     getInitialPosition(pos) {
@@ -110,7 +110,6 @@ export default class FznDrawable {
         for (let i = 0, len = this.layers.length, layer, itemList; i < len; i += 1) {
             layer = this.layers[i] || false;
             itemList = items[layer] || false;
-            this.children[layer] = [];
             if (itemList) {
                 if (itemList instanceof Array) {
                     for (let j = 0, len2 = itemList.length; j < len2; j += 1) {
@@ -123,6 +122,8 @@ export default class FznDrawable {
     }
 
     go() {
+        if (!this.isAlive) return;
+        if (typeof this.beforeGo === 'function') this.beforeGo();
         if (this.anim) this.anim.go();
 
         this.render();
@@ -142,15 +143,21 @@ export default class FznDrawable {
                 }
             }
         }
-        if (this.afterGo && typeof this.afterGo === 'function') this.afterGo();
+        if (typeof this.afterGo === 'function') this.afterGo();
     }
 
-    add(type, params) {
+    add(type, p, n) {
+        const params = type !== "text" && typeof p === "string"
+            ? { copyOf: p }
+            : p;
+        const name = n || null;
         let tmp = null;
 
-        if (type === "text") this.children[type].push(params);
+        if (name) params.copyOf = name;
+        if (type === "text") this.children[type] = params;
         else tmp = this.game ? this.game.generate(type, this, params) : null;
         if (!this.game || !tmp) return;
+        this.children[type] = this.children[type] || [];
         this.children[type].push(tmp);
     }
 
