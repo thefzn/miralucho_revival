@@ -392,13 +392,22 @@ export default class FznGame extends FznDrawable {
         const itm = !n || !lib || !lib.items ? {} : lib.items[n] || {};
         const parentEl = parent || this;
         const p = Object.assign({}, itm, params);
+        const bgFields = ['size', 'source', 'sprite', 'fixed', 'color'];
         let result = null;
+        let bg = null;
         if (!lib) return result;
 
         this.instances += 1;
 
         p.id = `${type}_${n}_${this.instances}`;
         p.type = type;
+
+        if (p.background) {
+            bg = this.libs.background.getItem(p.background);
+            for (let i = 0, len = bgFields.length; i < len; i += 1) {
+                if (bgFields[i] in bg) p[bgFields[i]] = bg[bgFields[i]];
+            }
+        }
         switch (type) {
         case "background":
             result = new FznDrawable(parentEl, p);

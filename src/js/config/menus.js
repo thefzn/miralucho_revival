@@ -62,26 +62,19 @@ export default (LANG, HEIGHT, WIDTH) => [
                 {
                     copyOf: "btnClose",
                     pos: [(WIDTH / 2) - 110, HEIGHT - 100],
-                    color: 'black',
                     action(theGame, menu) {
                         theGame.reset(true);
                         menu.anim.start("fadeOut", false, () => {
                             theGame.remove("menu", menu.id);
                         });
                     },
-                    children: {
-                        text: gameLang[LANG].menus.main.start,
-                    },
+                    children: { text: gameLang[LANG].menus.main.start },
                 },
                 {
                     copyOf: "btnClose",
                     pos: [(WIDTH / 2) + 10, HEIGHT - 100],
-                    action(theGame) {
-                        theGame.add("menu", "settingsMenu");
-                    },
-                    children: {
-                        text: gameLang[LANG].menus.main.settings,
-                    },
+                    action(theGame) { theGame.add("menu", "settingsMenu"); },
+                    children: { text: gameLang[LANG].menus.main.settings },
                 },
             ],
         },

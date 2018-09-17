@@ -3,12 +3,7 @@ import buttonSprite from "../../img/button.png";
 export default [
     {
         name: "btnClose",
-        color: 'red',
-        source: buttonSprite,
-        sprite: {
-            stand: [0, 0],
-            press: [0, 33],
-        },
+        background: "btnRed",
         font: {
             family: "Gamegirl",
             color: "white",
@@ -16,7 +11,6 @@ export default [
             stroke: "black",
             size: "10px",
         },
-        size: [100, 32],
         pos: ["center", 60],
         sound: "pop",
         action(theGame, menu) {

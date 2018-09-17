@@ -25,5 +25,7 @@ export default class FznLibrary {
         }
     }
 
+    getItem(name) { return this.items[name] || null; }
+
     remove() { return this; }
 }
