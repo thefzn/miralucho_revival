@@ -1,4 +1,4 @@
-// import FznAnimation from './FznAnimation';
+import FznAnimation from './FznAnimation';
 
 export default class FznDrawable {
     constructor(parent, p, c) {
@@ -55,7 +55,7 @@ export default class FznDrawable {
 
         // Actions
         this.onLoad = params.onLoad || null;
-        // this.anim = (params.animation) ? new FznAnimation(this, params.animation) : null;
+        this.anim = (params.animation) ? new FznAnimation(this, params.animation) : null;
         this.isAlive = true;
         if (this.onLoad) this.onLoad();
 

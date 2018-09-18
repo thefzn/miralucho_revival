@@ -13,7 +13,7 @@ export default class FznButton extends FznDrawable {
         this.preAction = () => {
             this.activeSprite = "press";
             if (this.sound && this.sound.audio) this.sound.audio.play();
-            this.action(this.game, this.menu);
+            this.action(this.game, this.parent);
         };
     }
 
@@ -36,8 +36,8 @@ export default class FznButton extends FznDrawable {
                     this.children.button[item].checkClicked(insidePos);
                 });
             }
-            if (this.preAction && typeof this.preAction === 'function') this.preAction();
-            if (this.action && typeof this.action === 'function') this.action();
+            if (this.preAction && typeof this.preAction === 'function') this.preAction(this.game, this.parent);
+            if (this.action && typeof this.action === 'function') this.action(this.game, this.parent);
 
             return 1;
         }
