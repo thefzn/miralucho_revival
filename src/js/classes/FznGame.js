@@ -1,24 +1,22 @@
-import { animationFrame, getRandom } from '../tools';
+import { getRandom, log } from '../tools';
 import gameLang from '../config/gameLang';
-import FznLoader from './FznLoader';
 import FznLibrary from './FznLibrary';
 import FznMenu from './FznMenu';
 import FznButton from './FznButton';
+import FznLoadable from './FznLoadable';
 import FznDrawable from './FznDrawable';
 
-export default class FznGame extends FznDrawable {
+export default class FznGame extends FznLoadable {
     constructor(canvasID) {
         super(null, { id: "GAME" }, canvasID);
-        const self = this;
 
         this.resize();
 
-        this.loadQueue = 0;
         this.start = true;
         this.images = {};
-        this.instances = 0;
         this.audios = {};
         this.libs = {};
+        this.instances = 0;
 
         this.windowVariation = 3;
         this.turn = 0;
@@ -29,16 +27,11 @@ export default class FznGame extends FznDrawable {
         this.increment = 1.1;
         this.debug = false;
         this.isAlive = false;
+        this.speed = 1;
 
         this.ram = {};
         this.levelMeter = {};
-        this.speed = 1;
-
-        this.loader = new FznLoader(this, {
-            color: "black",
-            size: [this.cnv.width, 10],
-            pos: [0, "bottom"],
-        });
+        this.logger = log;
 
         if (!this.canvas) {
             throw (
@@ -46,20 +39,11 @@ export default class FznGame extends FznDrawable {
             );
         }
 
-        window.onresize = () => { self.resize(); };
+        window.onresize = () => { this.resize(); };
 
         this.canvas.fillStyle = this.font.color;
         this.canvas.font = `${this.font.size} '${this.font.family}', sans-serif"`;
         this.canvas.textAlign = this.font.align;
-
-        this.logClasses = {
-            log: { label: 'LOG', tClass: 'background: #26de81; color: #FFFFFF', mClass: 'color: #20bf6b;' },
-            info: { label: 'INFO', tClass: 'background: #45aaf2; color: #FFFFFF', mClass: 'color: #2d98da;' },
-            event: { label: 'LIFECYCLE', tClass: 'background: #4b7bec; color: #FFFFFF', mClass: 'color: #3867d6;' },
-            tip: { label: 'TIP', tClass: 'background: #a55eea; color: #FFFFFF', mClass: 'color: #8854d0;' },
-            warn: { label: 'WARNING', tClass: 'background: #f7b731; color: #FFFFFF', mClass: 'color: #fd9644;' },
-            error: { label: 'ERROR', tClass: 'background: #fc5c65; color: #FFFFFF', mClass: 'color: #eb3b5a;' },
-        };
 
         this.log('Game initialized!', 'event', true);
         this.catchClick();
@@ -79,60 +63,6 @@ export default class FznGame extends FznDrawable {
         //     this.updateLevelMeter();
         //     this.updateScore();
         // }
-    }
-
-    afterGo() {
-        animationFrame(() => {
-            if (this.loadQueue !== 0 || this.wait !== 0) this.loading();
-            else this.go();
-        });
-    }
-
-    load() {
-        const self = this;
-        this.loader.total = this.loadQueue;
-
-        this.log('Loading assets.');
-        Object.keys(this.images).forEach((img) => {
-            this.images[img] = new Image();
-            this.images[img].addEventListener("load", () => {
-                self.loadQueue -= 1;
-                if (!self.loadQueue) {
-                    self.log(`Assets loaded!`, 'event');
-                    if (self.wait) self.log(`Will wait ${self.wait} frames`);
-                } else self.log(`Image loaded, ${self.loadQueue} assets remaining.`);
-            }, false);
-            this.images[img].src = img;
-        });
-
-        Object.keys(this.audios).forEach((snd) => {
-            this.audios[snd] = new Audio();
-            this.audios[snd].addEventListener("loadeddata", () => {
-                self.loadQueue -= 1;
-                if (!self.loadQueue) {
-                    self.log(`Assets loaded!`, 'event');
-                    if (self.wait) self.log(`Will wait ${self.wait} frames`);
-                } else self.log(`Audio loaded, ${self.loadQueue} assets remaining.`);
-            }, false);
-            this.audios[snd].src = snd;
-        });
-
-        this.loading();
-    }
-
-    loading() {
-        if (this.loadQueue !== 0) {
-            this.loader.go();
-        } else if (this.wait > 0) {
-            this.wait -= 1;
-            if (this.wait <= 0) {
-                this.log("Loading complete. Starting Game!", "event");
-                if (typeof this.onLoad === "function") this.onLoad(this);
-                this.isAlive = true;
-            }
-            this.loader.go();
-        }
-        this.afterGo();
     }
 
     pause() { this.isAlive = !this.isAlive; }
@@ -185,22 +115,6 @@ export default class FznGame extends FznDrawable {
     removeWindow(window) {
         const { index } = window;
         this.windows[index] = false;
-    }
-
-    loadImage(source) {
-        const src = source || false;
-        if (!src || src in this.images) return;
-        this.images[src] = null;
-        this.loadQueue += 1;
-    }
-
-    loadSound(source) {
-        const src = source || false;
-        const sound = this.audios[src];
-        if (src && typeof sound === "undefined") {
-            this.audios[src] = null;
-            this.loadQueue += 1;
-        }
     }
 
     catchClick() {
@@ -428,16 +342,8 @@ export default class FznGame extends FznDrawable {
     }
 
     log(message, type, force) {
-        let t = type || 'log';
-
-        const format = this.logClasses[t] || this.logClasses.log;
-        const { tClass, mClass } = format;
-        const m = `%c ${message}`;
         const f = force || false;
 
-        t = `%c ${format.label} `;
-
-        if (!this.debug && !f) return;
-        console.log(t + m, tClass, mClass);
+        if ((this.debug || f) && this.logger) this.logger.log(message, type, force);
     }
 }
