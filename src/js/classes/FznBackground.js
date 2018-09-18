@@ -31,7 +31,6 @@ export default class FznBackground {
             this.pos[1] = (this.pos[1] === "center") ? (h / 2) - (this.size[1] / 2) : this.pos[1];
         }
         this.anim = new FznAnimation(this, this.animation);
-        this.game.loadImage(this.source);
     }
 
     go() {

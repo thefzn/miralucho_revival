@@ -62,7 +62,7 @@ export default class FznDrawable {
         // Initialize (except on FznGame class)
         if (this.isGame) return;
         this.loadChildren(children);
-        this.game.log(`Item ${this.id} (${this.type}) is ready.`);
+        if (this.game && this.game.log) this.game.log(`Item ${this.id} (${this.type}) is ready.`);
     }
 
     getInitialPosition(pos) {

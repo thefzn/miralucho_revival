@@ -18,9 +18,9 @@ export default class FznLibrary {
         } else if ('name' in par) {
             this.items[par.name] = par;
             this.length += 1;
-            if (this.type === "sound") this.game.loadSound(par.source);
+            if (this.type === "sound") this.game.loadResource("sound", par.source);
             else if (this.type === "background") {
-                this.game.loadImage(par.source);
+                this.game.loadResource("image", par.source);
             }
         }
     }
